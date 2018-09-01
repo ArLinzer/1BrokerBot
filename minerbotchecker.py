@@ -8,22 +8,19 @@ import ccxt
 # ==================== NOTABLE VARIABLES =================================
 # telegram token returned by BotFather
 TELEGRAMTOKEN = "[YOURTOKENHERE]"
-
-BROKERMINUTES = 360
-BALANCEMINUTES = 1 
-ALERTLOSS = -0.0005
-LOSSMARGIN = 0.1
-
 # this list contains user_id of user that are allowed to get response from the bot
 ALLOWEDUSERID = [TELEGRAMID]
-
 # log filename
 LOGPATH = "/bot/minerbot/bot.log"
 BROKERDBFILE = "/bot/minerbot/broker.txt"
+
+# global variable
+BROKERMINUTES = 360  #run full check for every 6hrs
+BALANCEMINUTES = 1   
+ALERTLOSS = -0.0005
 EXTRABOT = 1
 PROFITSELL = 0.0001
 # ========================================================================
-
 
 logging.basicConfig(
     filename=LOGPATH,
@@ -92,15 +89,7 @@ def checkBalance(bot, job):
         curprice = float(buf['profit_loss'])
 	posid = str(buf['position_id'])
         toSend = ""
-        #if abs(curprice) > abs(ALERTLOSS):
 	if brokerdata.has_key(posid):
-	 #      if abs(curprice) > abs(brokerdata[posid]):
-         #         if abs(curprice) > abs(brokerlowestprice[posid]):
-         #   	    toSend = "!! ALERT !!\nPosition ID: {}\nSymbol: {}\nLoss: {}\n\n".format(
-	 #	       buf['position_id'],
-	 #	       buf['symbol'],
-	 #	       buf['profit_loss'])   
-         #            for usr in ALLOWEDUSERID: bot.send_message(usr, text=toSend)
          toSend = ""
 	else:
            toSend = "New Position opened\nPosition ID: {}\nSymbol: {}\nLoss: {}\n\n".format(
@@ -108,13 +97,10 @@ def checkBalance(bot, job):
                      buf['symbol'],
                      buf['profit_loss'])
            for usr in ALLOWEDUSERID: bot.send_message(usr, text=toSend)
-
         if brokerlowestprice.has_key(posid):
            if abs(curprice) < abs(brokerlowestprice[posid]):
               curprice = brokerlowestprice[posid]
-
 	f.write("{},{},{}\r\n".format(str(buf['position_id']),str(buf['profit_loss']),str(curprice)))
-    
     f.close()
 
 def checkBroker(bot, job):
@@ -133,70 +119,6 @@ def checkBroker(bot, job):
                     buf['date_created'])
     for usr in ALLOWEDUSERID:
                 bot.send_message(usr, text=toSend)
-
-def checkWorkers(bot, job):
-    conn = http.client.HTTPSConnection(ZELCASHURL)
-    conn.request("GET", APIURL)
-    res = conn.getresponse()
-    toSend = ""
-    if res.status == 200:
-        buf = json.loads(res.read().decode("utf-8"))
-        #s = buf['minerStats']
-        #activeWorkers = s['activeWorkers']
-        activeWorkers = buf['workers']
-        activeWorker=0
-        for iterator in activeWorkers:
-           activeWorker = activeWorker+1
-
-        if activeWorker < WNUM:
-            toSend = "WARNING: Seems like some of your workers are offline ({}/{})".format(activeWorkers, WNUM)
-            for usr in ALLOWEDUSERID:
-                bot.send_message(usr, text=toSend)
-    else:
-        toSend = "Unable to reach voidr API site: {}".format(res.reason)
-        for usr in ALLOWEDUSERID:
-            bot.send_message(usr, text=toSend)
-
-
-#def status(bot, update):
-#    if update.message.chat_id in ALLOWEDUSERID:
-#        conn = http.client.HTTPSConnection("zelcash.voidr.net")
-#        conn.request("GET", APIURL)
-#        res = conn.getresponse()
-#        toSend = ""
-#        if res.status == 200:
-#            buf = json.loads(res.read().decode("utf-8"))
-#            aus = buf['minerStats']
-#            toSend = "Addr: {}\nHash: {}\nreportedHash: {}\nnWorkers: {}\nShares (v/s/i): {}/{}/{}".format(
-#                buf['address'], buf['hashRate'], buf['reportedHashRate'], aus['activeWorkers'], aus['validShares'], aus['staleShares'], aus['invalidShares'])
-#        else:
-#            toSend = "Unable to reach voidr API site: {}".format(res.reason)
-#        update.message.reply_text(toSend)
-#        conn.close()
-#    else:
-#        logger.info("{} tried to contact me (comm: {})".format(
-#            update.message.from_user, update.message.text))
-
-def workers(bot, update):
-    if update.message.chat_id in ALLOWEDUSERID:
-        conn = http.client.HTTPSConnection(ZELCASHURL)
-        conn.request("GET", APIURL)
-        res = conn.getresponse()
-        toSend = ""
-        if res.status == 200:
-            buf = json.loads(res.read().decode("utf-8"))
-            w = buf['workers']
-            for iterator in w:
-                buf = w[iterator]
-                toSend += "Worker {}\nHash: {}\nreportedHash: {}\nShares (s/i): {}/{}\n\n".format(
-                    buf['name'], buf['hashrate'], buf['hashrateString'], buf['shares'], buf['invalidshares'])
-        else:
-            toSend = "Unable to reach voidr API site: {}".format(res.reason)
-        update.message.reply_text(toSend)
-        conn.close()
-    else:
-        logger.info("{} tried to contact me (comm: {})".format(
-            update.message.from_user, update.message.text))
 
 def brokerstatus(bot, update):
     if update.message.chat_id in ALLOWEDUSERID:
@@ -225,46 +147,27 @@ def help(bot, update):
         logger.info("{} tried to contact me (comm: {})".format(
             update.message.from_user, update.message.text))
 
-def ping(bot, update):
-    if update.message.chat_id in ALLOWEDUSERID:
-        update.message.reply_text("pong")
-    else:
-        logger.info("{} tried to contact me (comm: {})".format(
-            update.message.from_user, update.message.text))
-
-
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
-
 
 def main():
     updater = Updater(TELEGRAMTOKEN)
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("workers", workers))
-#    dp.add_handler(CommandHandler("status", status))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("ping", ping))
     dp.add_handler(CommandHandler("brokerstatus", brokerstatus))
     dp.add_handler(CommandHandler("extramonitor", extramonitor, pass_args=True))
 
     dp.job_queue.run_repeating(
-        checkWorkers, (WCHECKINGMINUTES * 60))
-
-    dp.job_queue.run_repeating(
 	checkBroker, (BROKERMINUTES * 60))
-
     dp.job_queue.run_repeating(
         checkBalance, (BALANCEMINUTES *60 ))
-
     dp.job_queue.run_repeating(
-        extracheckprofit, (5 ))
-
+        extracheckprofit, (5))
 
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
-
 
 if __name__ == '__main__':
     main()
