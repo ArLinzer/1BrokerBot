@@ -7,25 +7,19 @@ import ccxt
 
 # ==================== NOTABLE VARIABLES =================================
 # telegram token returned by BotFather
-TELEGRAMTOKEN = "336697024:AAG2ZvoudCPSjzabd2gyy8jZGcARxB46EDg"
-# get this url from ethermine -> json api section
-ZELCASHURL = "zelcash.voidr.net"
-APIURL = "/api/worker_stats?t1WDdAfRWbY9utuAxN1497SJwqG8oRKPnbu"
-# if number of active workers drop less than this number bot will notify you.
-# so if you have 3 rigs, WNUM should set to 3!
-WNUM = 1
-# every X minutes bot will check that WNUM workers are up on ethermine
-# i suggest to set this to 30 minutes
-WCHECKINGMINUTES = 30
+TELEGRAMTOKEN = "[YOURTOKENHERE]"
+
 BROKERMINUTES = 360
 BALANCEMINUTES = 1 
-# this list contains user_id of user that are allowed to get response from the bot
-ALLOWEDUSERID = [175666244]
 ALERTLOSS = -0.0005
 LOSSMARGIN = 0.1
+
+# this list contains user_id of user that are allowed to get response from the bot
+ALLOWEDUSERID = [TELEGRAMID]
+
 # log filename
-LOGPATH = "/home/bot/minerbot/bot.log"
-BROKERDBFILE = "/home/bot/minerbot/broker.txt"
+LOGPATH = "/bot/minerbot/bot.log"
+BROKERDBFILE = "/bot/minerbot/broker.txt"
 EXTRABOT = 1
 PROFITSELL = 0.0001
 # ========================================================================
@@ -39,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 broker = ccxt._1broker({
-        'apiKey': 'A028e93dd48f12b1aedeb3e17dd4614b',
+        'apiKey': '[YOUR1BROKERAPIKEY]',
 })
 
 def extramonitor(bot, update, args):
