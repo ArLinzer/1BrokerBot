@@ -1,2 +1,7 @@
 # 1BrokerBot
-1Broker Bot connected to Telegram
+Connecting your 1Broker account with Telegra,
+
+Required Library:
+- python-telegram-bot
+- CCXT – CryptoCurrency eXchange Trading Library
+
